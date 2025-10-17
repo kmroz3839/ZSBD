@@ -56,3 +56,41 @@ FROM departments
 FULL JOIN employees USING(department_id)
 GROUP BY department_id
 HAVING COUNT(employee_id) = 0;
+
+
+--9.
+SELECT 
+    first_name,
+    last_name,
+    job_id,
+    department_name,
+    (SELECT grade FROM job_grades WHERE salary >= min_salary AND salary <= max_salary) AS grade
+FROM employees
+LEFT JOIN jobs USING(job_id)
+LEFT JOIN departments USING(department_id);
+
+
+--10.
+SELECT 
+    first_name,
+    last_name,
+    salary
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+--11.
+SELECT
+    employee_id,
+    first_name,
+    last_name,
+    department_id AS dept_id
+FROM employees
+INNER JOIN (
+    SELECT
+        department_id,
+        COUNT(employee_id)
+    FROM employees
+    FULL JOIN departments USING(department_id)
+    WHERE last_name LIKE '%u%' OR last_name LIKE '%U%'
+    GROUP BY department_id
+) USING(department_id);

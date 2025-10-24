@@ -91,7 +91,7 @@ INSERT INTO v_wysokie_pensje
         NULL);
 
 --9.
-CREATE VIEW v_managers AS
+CREATE MATERIALIZED VIEW v_managers AS
     SELECT employee_id, first_name, last_name, department_id
     FROM employees
     WHERE employee_id IN (SELECT DISTINCT manager_id FROM departments);

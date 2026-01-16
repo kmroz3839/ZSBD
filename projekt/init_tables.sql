@@ -37,17 +37,28 @@ CREATE TABLE `sales` (
     FOREIGN KEY (`game_id`) REFERENCES `games`(`serial`)
 );
 
---sprawdź czy jest wystarczająco dużo w magazynie
+
+--sprawdź czy jest wystarczająco dużo w magazynie i czy id istnieje
 CREATE OR REPLACE PROCEDURE validate_sale (
     p_game_id IN VARCHAR2,
     p_quantity IN INT
 ) AS
     v_stock INT;
+DECLARE
+    no_stock EXCEPTION;
 BEGIN
     SELECT stock INTO v_stock FROM inventory WHERE game_id = p_game_id;
     IF v_stock < p_quantity THEN
-        RAISE_APPLICATION_ERROR(-20001, 'brak w magazynie: ' || p_game_id);
+        raise no_stock;
+    ELSE IF v_stock IS NULL THEN
+        RAISE NO_DATA_FOUND;
     END IF;
+
+    EXCEPTION
+        WHEN no_stock THEN
+            RAISE_APPLICATION_ERROR(-20001, 'brak w magazynie: ' || p_game_id);
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20002, 'nie znaleziono id: ' || p_game_id);
 END;
 /
 
@@ -61,6 +72,17 @@ BEGIN
     --auto increment sale_id
     SELECT sale_seq.NEXTVAL INTO :NEW.sale_id FROM dual;
     decrement_inventory(:NEW.game_id, :NEW.quantity);
+END;
+/
+
+--trigger przed dodaniem klienta
+CREATE SEQUENCE customer_seq START WITH 1;
+CREATE OR REPLACE TRIGGER customer_trigger
+BEFORE INSERT ON customers
+FOR EACH ROW
+BEGIN
+    --auto increment customer_id
+    SELECT customer_seq.NEXTVAL INTO :NEW.customer_id FROM dual;
 END;
 /
 

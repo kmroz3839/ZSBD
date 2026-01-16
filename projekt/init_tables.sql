@@ -37,6 +37,59 @@ CREATE TABLE `sales` (
     FOREIGN KEY (`game_id`) REFERENCES `games`(`serial`)
 );
 
+CREATE TABLE `log` {
+    `action` VARCHAR(255) NOT NULL,
+    `action_date` DATE NOT NULL
+};
+
+CREATE OR REPLACE PROCEDURE log_action (
+    p_action IN VARCHAR2
+) AS
+BEGIN
+    INSERT INTO log (action, action_date)
+    VALUES (p_action, SYSDATE);
+END;
+/
+
+--log
+CREATE OR REPLACE TRIGGER log_trigger
+AFTER INSERT OR UPDATE OR DELETE ON sales
+FOR EACH ROW
+BEGIN
+    IF INSERTING THEN
+        log_action('Dodano sprzedaż: ' || :NEW.sale_id);
+    ELSE IF UPDATING THEN
+        log_action('Zaktualizowano sprzedaż: ' || :NEW.sale_id);
+    ELSE IF DELETING THEN
+        log_action('Usunięto sprzedaż: ' || :OLD.sale_id);
+    END IF;
+END;
+/
+CREATE OR REPLACE TRIGGER log_trigger2
+AFTER INSERT OR UPDATE OR DELETE ON inventory
+FOR EACH ROW
+BEGIN
+    IF DELETING THEN
+        log_action('Usunięto z magazynu: ' || :OLD.game_id)
+    ELSE THEN
+        log_action('Zmiana stanu magazynu: ' || :NEW.game_id || ' - ' || :NEW.stock);
+    END IF;
+END;
+/
+CREATE OR REPLACE TRIGGER log_trigger3
+AFTER INSERT OR UPDATE OR DELETE ON customers
+FOR EACH ROW
+BEGIN
+    IF DELETING THEN
+        log_action('Usunięto klienta: ' || :OLD.customer_id)
+    ELSE IF INSERTING THEN
+        log_action('Dodano klienta: ' || :NEW.customer_id);
+    ELSE THEN
+        log_action('Zmiana stanu klienta: ' || :NEW.customer_id);
+    END IF;
+END;
+/
+
 
 --sprawdź czy jest wystarczająco dużo w magazynie i czy id istnieje
 CREATE OR REPLACE PROCEDURE validate_sale (

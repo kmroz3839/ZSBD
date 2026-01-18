@@ -204,3 +204,13 @@ FROM games g
 INNER JOIN inventory i ON g.serial = i.game_id
 WHERE i.stock > 0;
 
+INSERT INTO employees (employee_id, name, position, hire_date) VALUES 
+    (1, 'Jan Smok', 'Sales Manager', TO_DATE('2020-01-15', 'YYYY-MM-DD'));
+
+
+INSERT INTO inventory (game_id, stock) VALUES ('ABC123', 50);
+INSERT INTO games (serial, title, platform) VALUES ('ABC123', 'Game One', 'PS3');
+INSERT INTO games (serial, title, platform) VALUES ('ABC234', 'Game Two', 'PS3');
+INSERT INTO sales (game_id, sale_date, quantity, price, customer_id, employee_id)
+    VALUES ('ABC123', SYSDATE, 1, 10.20, NULL, 1);
+

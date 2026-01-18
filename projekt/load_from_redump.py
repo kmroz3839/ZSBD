@@ -46,16 +46,16 @@ for page in pages_urls:
 sql_file = "games.sql"
 with open(sql_file, "w", encoding="utf-8") as f:
     f.write("""
-CREATE TABLE IF NOT EXISTS `games` (
-    `serial` VARCHAR(32) NOT NULL,
-    `title` TEXT NOT NULL,
-    `platform` TEXT NOT NULL,
-    PRIMARY KEY (`serial`)
+CREATE TABLE IF NOT EXISTS games (
+    serial VARCHAR(32) NOT NULL,
+    title TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    PRIMARY KEY (serial)
 )
             """)
     for entry in entries:
-        f.write(f"""
-MERGE INTO `games` (`serial`, `title`, `platform`) VALUES (
+        f.write("""
+MERGE INTO games (serial, title, platform) VALUES (
     '{entry['serial'].replace("'", "''")}',
     '{entry['title'].replace("'", "''")}',
     '{entry['platform'].replace("'", "''")}'

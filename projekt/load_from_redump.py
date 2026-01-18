@@ -4,7 +4,7 @@ import requests
 baseurl = "http://redump.org"
 scan_urls = [
     "/discs/system/ps3/region/Eu",
-    "/discs/system/psp/region/Eu/"
+    "/discs/system/psp/region/Eu"
 ]
 
 entries = []
@@ -48,8 +48,8 @@ with open(sql_file, "w", encoding="utf-8") as f:
     f.write("""
 CREATE TABLE IF NOT EXISTS games (
     serial VARCHAR(32) NOT NULL,
-    title TEXT NOT NULL,
-    platform TEXT NOT NULL,
+    title VARCHAR(300) NOT NULL,
+    platform VARCHAR(8) NOT NULL,
     PRIMARY KEY (serial)
 )
             """)

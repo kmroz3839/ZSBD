@@ -90,6 +90,22 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE PROCEDURE check_game_id (
+    p_game_id IN VARCHAR2
+) AS
+    v_count INT;
+    invalid_id EXCEPTION;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM games WHERE serial = p_game_id;
+    IF v_count = 0 THEN
+        RAISE invalid_id;
+    END IF;
+
+    EXCEPTION
+        WHEN invalid_id THEN
+            RAISE_APPLICATION_ERROR(-20003, 'nieprawidłowe id gry: ' || p_game_id);
+END;
+/
 
 --sprawdź czy jest wystarczająco dużo w magazynie i czy id istnieje
 CREATE OR REPLACE PROCEDURE validate_sale (
@@ -99,6 +115,7 @@ CREATE OR REPLACE PROCEDURE validate_sale (
     v_stock INT;
     no_stock EXCEPTION;
 BEGIN
+    check_game_id(p_game_id);
     SELECT stock INTO v_stock FROM inventory WHERE game_id = p_game_id;
     IF v_stock < p_quantity THEN
         raise no_stock;
@@ -149,6 +166,14 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE TRIGGER inventory_check_id
+BEFORE INSERT ON inventory
+FOR EACH ROW
+BEGIN
+    check_game_id(:NEW.game_id);
+END;
+/
+
 CREATE OR REPLACE PROCEDURE update_inventory (
     p_game_id IN VARCHAR2,
     p_quantity IN INT
@@ -172,3 +197,10 @@ BEGIN
     VALUES (p_game_id, SYSDATE, p_quantity, p_price, p_customer_id, p_employee_id);
 END;
 /
+
+CREATE OR REPLACE VIEW v_available_games AS
+SELECT g.serial, g.title, g.platform, i.stock
+FROM games g
+INNER JOIN inventory i ON g.serial = i.game_id
+WHERE i.stock > 0;
+

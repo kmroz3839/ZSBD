@@ -17,6 +17,12 @@ CREATE TABLE games (
     platform VARCHAR(8) NOT NULL,
     PRIMARY KEY (serial)
 );
+CREATE TABLE games_staging (
+    serial VARCHAR(32) NOT NULL,
+    title VARCHAR(300) NOT NULL,
+    platform VARCHAR(8) NOT NULL,
+    PRIMARY KEY (serial)
+);
 
 CREATE TABLE inventory (
     game_id VARCHAR(32) PRIMARY KEY,
@@ -198,19 +204,28 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE TRIGGER validate_game_id_trigger
+BEFORE INSERT OR UPDATE ON games
+FOR EACH ROW
+BEGIN
+    IF :NEW.serial IS NULL OR TRIM(:NEW.serial) = '' THEN
+        RAISE_APPLICATION_ERROR(-20004, 'nieprawidłowe id');
+    END IF;
+END;
+/
+
 CREATE OR REPLACE VIEW v_available_games AS
 SELECT g.serial, g.title, g.platform, i.stock
 FROM games g
 INNER JOIN inventory i ON g.serial = i.game_id
 WHERE i.stock > 0;
 
-INSERT INTO employees (employee_id, name, position, hire_date) VALUES 
-    (1, 'Jan Smok', 'Sales Manager', TO_DATE('2020-01-15', 'YYYY-MM-DD'));
 
-
-INSERT INTO inventory (game_id, stock) VALUES ('ABC123', 50);
-INSERT INTO games (serial, title, platform) VALUES ('ABC123', 'Game One', 'PS3');
-INSERT INTO games (serial, title, platform) VALUES ('ABC234', 'Game Two', 'PS3');
-INSERT INTO sales (game_id, sale_date, quantity, price, customer_id, employee_id)
-    VALUES ('ABC123', SYSDATE, 1, 10.20, NULL, 1);
-
+CREATE OR REPLACE VIEW v_monthly_sales AS
+SELECT
+    TO_CHAR(s.sale_date, 'YYYY-MM') AS sale_month,
+    SUM(s.quantity) AS total_quantity,
+    SUM(s.price * s.quantity) AS total_revenue
+FROM sales s
+GROUP BY TO_CHAR(s.sale_date, 'YYYY-MM')
+ORDER BY sale_month;

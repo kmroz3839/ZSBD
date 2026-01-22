@@ -52,3 +52,22 @@ BEGIN
     END IF;
 END;
 /
+
+
+CREATE TABLE sales_archive (
+    sale_id INT,
+    game_id VARCHAR(32) NOT NULL,
+    sale_date DATE NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    customer_id INT,
+    employee_id INT
+);
+CREATE OR REPLACE TRIGGER archive_deleted_sales
+BEFORE DELETE ON sales
+FOR EACH ROW
+BEGIN
+    INSERT INTO sales_archive (sale_id, game_id, sale_date, quantity, price, customer_id, employee_id)
+    VALUES (:OLD.sale_id, :OLD.game_id, :OLD.sale_date, :OLD.quantity, :OLD.price, :OLD.customer_id, :OLD.employee_id);
+END;
+/

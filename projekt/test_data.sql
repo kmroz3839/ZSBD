@@ -18,3 +18,24 @@ INSERT INTO sales (game_id, sale_date, quantity, price, customer_id, employee_id
 SELECT * FROM v_monthly_sales;
 
 SELECT * FROM v_employee_sales;
+
+DECLARE
+    new_id INT;
+BEGIN
+    new_id := pkg_store.sale_now('ABC234', 1, 10.00, NULL, NULL);
+    DBMS_OUTPUT.PUT_LINE('Nowa sprzedaż: ' || new_id);
+END;
+/
+
+DELETE FROM sales WHERE sale_id = 7;
+
+
+BEGIN
+    gen_reports.generate_monthly_sales_report();
+END;
+/
+BEGIN
+    gen_reports.generate_quarterly_sales_report();
+END;
+/
+SELECT * FROM sales_report;

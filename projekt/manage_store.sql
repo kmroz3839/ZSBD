@@ -3,7 +3,7 @@ CREATE OR REPLACE PACKAGE pkg_store AS
     PROCEDURE validate_sale(p_game_id IN VARCHAR2, p_quantity IN INT);
     PROCEDURE decrement_inventory(p_game_id IN VARCHAR2, p_quantity IN INT);
     PROCEDURE update_inventory(p_game_id IN VARCHAR2, p_quantity IN INT);
-    PROCEDURE sale_now(p_game_id IN VARCHAR2, p_quantity IN INT, p_price IN DECIMAL, p_customer_id IN INT, p_employee_id IN INT);
+    FUNCTION sale_now(p_game_id IN VARCHAR2, p_quantity IN INT, p_price IN DECIMAL, p_customer_id IN INT, p_employee_id IN INT) RETURN INT;
 END pkg_store;
 /
 
@@ -47,10 +47,13 @@ CREATE OR REPLACE PACKAGE BODY pkg_store AS
         WHERE game_id = p_game_id;
     END update_inventory;
 
-    PROCEDURE sale_now(p_game_id IN VARCHAR2, p_quantity IN INT, p_price IN DECIMAL, p_customer_id IN INT, p_employee_id IN INT) IS
+    FUNCTION sale_now(p_game_id IN VARCHAR2, p_quantity IN INT, p_price IN DECIMAL, p_customer_id IN INT, p_employee_id IN INT) RETURN INT IS
+        v_sale_id INT;
     BEGIN
         INSERT INTO sales (game_id, sale_date, quantity, price, customer_id, employee_id)
-        VALUES (p_game_id, SYSDATE, p_quantity, p_price, p_customer_id, p_employee_id);
+        VALUES (p_game_id, SYSDATE, p_quantity, p_price, p_customer_id, p_employee_id)
+        RETURNING sale_id INTO v_sale_id;
+        RETURN v_sale_id;
     END sale_now;
 
 END pkg_store;

@@ -16,8 +16,8 @@ INSERT INTO sales (game_id, sale_date, quantity, price, customer_id, employee_id
     VALUES ('ABC123', TO_DATE('2025-01-01', 'YYYY-MM-DD'), 3, 30.60, NULL, 1);
 
 SELECT * FROM v_monthly_sales;
-
 SELECT * FROM v_employee_sales;
+SELECT * FROM v_yearly_sales;
 
 DECLARE
     new_id INT;
@@ -38,4 +38,9 @@ BEGIN
     gen_reports.generate_quarterly_sales_report();
 END;
 /
+BEGIN
+    gen_reports.generate_yearly_sales_report();
+END;
+/
+
 SELECT * FROM sales_report;
